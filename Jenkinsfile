@@ -12,7 +12,7 @@ pipeline {
 
         stage('Pull Dode') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Liu-Shihao/helloworld.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
             }
         }
 
