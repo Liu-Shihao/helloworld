@@ -1,34 +1,48 @@
 pipeline {
     agent any
+    environment{
+        harborHost = '192.168.153.131:80'
+        harborRepo = 'helloworld'
+        harborUser = 'admin'
+        harborPasswd = 'Hardor12345'
+    }
 
+    // 存放所有任务的合集
     stages {
-        stage('拉取Git代码') {
+
+        stage('Pull Dode') {
             steps {
-                echo '拉取Git代码'
+                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Liu-Shihao/helloworld.git']]])
             }
         }
 
-        stage('检测代码质量') {
+        stage('Build') {
             steps {
-                echo '检测代码质量'
+                sh '/var/jenkins_home/maven/bin/mvn clean package -DskipTests'
             }
         }
 
-        stage('构建代码') {
+//         stage('Sonar Scan') {
+//             steps {
+//                 sh '/var/jenkins_home/sonar-scanner/bin/sonar-scanner -Dsonar.sources=./ -Dsonar.projectname=${JOB_NAME} -Dsonar.projectKey=${JOB_NAME} -Dsonar.java.binaries=target/ -Dsonar.login=7d66af4b39cfe4f52ac0a915d4c9d5c513207098'
+//             }
+//         }
+
+        stage('Build Images & Push Harbor') {
             steps {
-                echo '构建代码'
+                sh '''cp ./target/*.jar ./docker/
+                cd ./docker
+                docker build -t ${JOB_NAME}:${tag} ./'''
+
+                sh '''docker login -u ${harborUser} -p ${harborPasswd} ${harborHost}
+                docker tag ${JOB_NAME}:${tag} ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}
+                docker push ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}'''
             }
         }
 
-        stage('制作自定义镜像并发布Harbor') {
+        stage('Pull Images & Run') {
             steps {
-                echo '制作自定义镜像并发布Harbor'
-            }
-        }
-
-        stage('基于Harbor部署工程') {
-            steps {
-                echo '基于Harbor部署工程'
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'testEnvironment', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: "/usr/bin/deploy.sh $harborHost $harborRepo $JOB_NAME $tag $port ", execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
             }
         }
     }
