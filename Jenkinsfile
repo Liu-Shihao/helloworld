@@ -32,11 +32,11 @@ pipeline {
             steps {
                 sh '''cp ./target/*.jar ./deploy/
                 cd ./deploy
-                docker build -t ${JOB_NAME}:${tag} ./'''
+                sudo docker build -t ${JOB_NAME}:${tag} .'''
 
-                sh '''docker login -u ${harborUser} -p ${harborPasswd} ${harborHost}
-                docker tag ${JOB_NAME}:${tag} ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}
-                docker push ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}'''
+                sh '''sudo docker login -u ${harborUser} -p ${harborPasswd} ${harborHost}
+                sudo docker tag ${JOB_NAME}:${tag} ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}
+                sudo docker push ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}'''
             }
         }
 
