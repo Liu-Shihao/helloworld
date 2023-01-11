@@ -4,7 +4,7 @@ pipeline {
         harborHost = '192.168.153.131:80'
         harborRepo = 'helloworld'
         harborUser = 'admin'
-        harborPasswd = 'Hardor12345'
+        harborPasswd = 'Harbor12345'
     }
 
     // 存放所有任务的合集
