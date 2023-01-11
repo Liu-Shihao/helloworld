@@ -30,8 +30,8 @@ pipeline {
 
         stage('Build Images & Push Harbor') {
             steps {
-                sh '''cp ./target/*.jar ./docker/
-                cd ./docker
+                sh '''cp ./target/*.jar ./deploy/
+                cd ./deploy
                 docker build -t ${JOB_NAME}:${tag} ./'''
 
                 sh '''docker login -u ${harborUser} -p ${harborPasswd} ${harborHost}
