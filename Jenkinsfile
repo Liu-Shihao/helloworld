@@ -10,15 +10,9 @@ pipeline {
     // 存放所有任务的合集
     stages {
 
-        stage('Pull Dode') {
+        stage('Pull Code') {
             steps {
                 checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh '/var/jenkins_home/apache-maven-3.8.6/bin/mvn clean package -DskipTests'
             }
         }
 
@@ -28,7 +22,13 @@ pipeline {
 //             }
 //         }
 
-        stage('Build Images & Push Harbor') {
+        stage('Maven Build') {
+            steps {
+                sh '/var/jenkins_home/apache-maven-3.8.6/bin/mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Push Harbor') {
             steps {
                 sh '''cp ./target/*.jar ./deploy/
                 cd ./deploy
@@ -40,7 +40,7 @@ pipeline {
             }
         }
 
-        stage('Pull Images & Run') {
+        stage('Publish Over SSH') {
             steps {
                 sshPublisher(publishers: [sshPublisherDesc(configName: '131', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: "deploy.sh $harborHost $harborRepo $JOB_NAME $tag $container_port $host_port", execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
             }
