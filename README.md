@@ -33,3 +33,14 @@ docker run -d -p 8889:8080 helloworld:v1.0.0
 我们需要编写Jenkinsfile文件，来完成我们部署的流程： 从Git仓库拉去代码 --》Maven打包 --》Sonar代码质量检测 --》制作镜像 --》上传镜像仓库 --》推送到目标服务器（执行目标服务器启动脚本deploy.sh）
 
 # 三、Jenkins +K8s方式部署
+
+```shell
+#安装Kuboard
+kubectl apply -f https://addons.kuboard.cn/kuboard/kuboard-v3.yaml
+kubectl apply -f https://addons.kuboard.cn/kuboard/kuboard-v3-swr.yaml
+
+# 查看启动情况
+kubectl get pods -n kuboard
+kubectl get svc -A |grep kuboard
+# 访问30080端口 ：http://192.168.153.128:30080   初始用户admin  初始密码：Kuboard123
+```
