@@ -12,7 +12,7 @@ pipeline {
 
         stage('Pull Code') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
+            checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
             }
         }
 
@@ -32,11 +32,11 @@ pipeline {
             steps {
                 sh '''cp ./target/*.jar ./deploy/
                 cd ./deploy
-                docker build -t ${JOB_NAME}:${tag} .'''
+                docker build -t ${JOB_NAME}:latest .'''
 
                 sh '''docker login -u ${harborUser} -p ${harborPasswd} ${harborHost}
-                docker tag ${JOB_NAME}:${tag} ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}
-                docker push ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}'''
+                docker tag ${JOB_NAME}:latest ${harborHost}/${harborRepo}/${JOB_NAME}:latest
+                docker push ${harborHost}/${harborRepo}/${JOB_NAME}:latest'''
             }
         }
 
@@ -47,7 +47,8 @@ pipeline {
         }
         stage('Deployment k8s') {
             steps {
-            sh 'ssh root@192.168.153.128 kubectl apply -f /usr/local/k8s/pipeline.yaml'
+            sh '''ssh root@192.168.153.128 kubectl apply -f /usr/local/k8s/pipeline.yaml
+            ssh root@192.168.153.128 kubectl rollout restart Deployment pipeline -n test'''
             }
         }
     }
