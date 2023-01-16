@@ -47,7 +47,7 @@ pipeline {
         }
         stage('Deployment k8s') {
             steps {
-            sh 'ssh root@192.168.153.128 kubectl apply -f pipeline.yaml'
+            sh 'ssh root@192.168.153.128 kubectl apply -f /usr/local/k8s/pipeline.yaml'
             }
         }
     }
