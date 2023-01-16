@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: pipeline
-          image: 192.168.153.131:80/helloworld/helloworld:v2.1.1
+          image: 192.168.153.131:80/helloworld/helloworld:3.1.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
