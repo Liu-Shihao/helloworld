@@ -47,7 +47,6 @@ pipeline {
         }
         stage('Deployment k8s') {
             steps {
-            sshPublisher(publishers: [sshPublisherDesc(configName: 'k8s', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'pipeline.yaml')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
             sh 'ssh root@192.168.153.128 kubectl apply -f pipeline.yaml'
             }
         }
