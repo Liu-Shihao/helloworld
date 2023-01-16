@@ -32,8 +32,138 @@ docker run -d -p 8889:8080 helloworld:v1.0.0
 使用Jenkins Pipeline方式部署会比第一种手动使用Docker部署的方式简单很多。
 我们需要编写Jenkinsfile文件，来完成我们部署的流程： 从Git仓库拉去代码 --》Maven打包 --》Sonar代码质量检测 --》制作镜像 --》上传镜像仓库 --》推送到目标服务器（执行目标服务器启动脚本deploy.sh）
 
+```groovy
+pipeline {
+    agent any
+    environment{
+        harborHost = '192.168.153.131:80'
+        harborRepo = 'helloworld'
+        harborUser = 'admin'
+        harborPasswd = 'Harbor12345'
+    }
+
+    // 存放所有任务的合集
+    stages {
+
+        stage('Pull Code') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
+            }
+        }
+
+//         stage('Sonar Scan') {
+//             steps {
+//                 sh '/var/jenkins_home/sonar-scanner/bin/sonar-scanner -Dsonar.sources=./ -Dsonar.projectname=${JOB_NAME} -Dsonar.projectKey=${JOB_NAME} -Dsonar.java.binaries=target/ -Dsonar.login=7d66af4b39cfe4f52ac0a915d4c9d5c513207098'
+//             }
+//         }
+
+        stage('Maven Build') {
+            steps {
+                sh '/var/jenkins_home/apache-maven-3.8.6/bin/mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Push Harbor') {
+            steps {
+                sh '''cp ./target/*.jar ./deploy/
+                cd ./deploy
+                docker build -t ${JOB_NAME}:${tag} .'''
+
+                sh '''docker login -u ${harborUser} -p ${harborPasswd} ${harborHost}
+                docker tag ${JOB_NAME}:${tag} ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}
+                docker push ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}'''
+            }
+        }
+
+        stage('Publish Over SSH') {
+            steps {
+                sshPublisher(publishers: [sshPublisherDesc(configName: '131', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: "deploy.sh $harborHost $harborRepo $JOB_NAME $tag $container_port $host_port", execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            }
+        }
+    }
+    post {
+      always {
+        emailext body: '${FILE,path="email.html"}', subject: '【构建通知】：$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'liush99@foxmail.com'
+      }
+    }
+}
+
+```
+
 # 三、Jenkins +K8s方式部署
 
+
+编写Deployment资源文件,Jenkins拉去资源文件，通知k8s进行部署，不在需要
+
+
+
+
+配置Docker私服,创建一个K8s Secret
+需要给k8s集群的master和worker节点添加docker配置
+```shell
+cat /etc/docker/daemon.json
+
+{
+  "registry-mirrors": ["https://iedolof4.mirror.aliyuncs.com"],
+  "insecure-registries": ["http://192.168.153.131:80"]
+}
+
+systemctl restart docker
+```
+
+```groovy
+pipeline {
+    agent any
+    environment{
+        harborHost = '192.168.153.131:80'
+        harborRepo = 'helloworld'
+        harborUser = 'admin'
+        harborPasswd = 'Harbor12345'
+    }
+
+    // 存放所有任务的合集
+    stages {
+
+        stage('Pull Code') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
+            }
+        }
+
+        stage('Maven Build') {
+            steps {
+                sh '/var/jenkins_home/apache-maven-3.8.6/bin/mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Push Harbor') {
+            steps {
+                sh '''cp ./target/*.jar ./deploy/
+                cd ./deploy
+                docker build -t ${JOB_NAME}:${tag} .'''
+
+                sh '''docker login -u ${harborUser} -p ${harborPasswd} ${harborHost}
+                docker tag ${JOB_NAME}:${tag} ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}
+                docker push ${harborHost}/${harborRepo}/${JOB_NAME}:${tag}'''
+            }
+        }
+
+        stage('Publish Over SSH') {
+            steps {
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'k8s', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'pipeline.yaml')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            }
+        }
+    }
+    post {
+      always {
+        emailext body: '${FILE,path="email.html"}', subject: '【构建通知】：$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'liush99@foxmail.com'
+      }
+    }
+}
+```
+
+
+可视化界面Kuboard
 ```shell
 #安装Kuboard
 kubectl apply -f https://addons.kuboard.cn/kuboard/kuboard-v3.yaml
@@ -44,3 +174,4 @@ kubectl get pods -n kuboard
 kubectl get svc -A |grep kuboard
 # 访问30080端口 ：http://192.168.153.128:30080   初始用户admin  初始密码：Kuboard123
 ```
+
