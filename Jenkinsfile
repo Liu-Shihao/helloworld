@@ -7,7 +7,6 @@ pipeline {
         harborPasswd = 'Harbor12345'
     }
 
-    // 存放所有任务的合集
     stages {
 
         stage('Pull Code') {
