@@ -54,5 +54,5 @@ spec:
             service:
               name: hello-deploy
               port:
-                number: 8886
+                number: 8088
 

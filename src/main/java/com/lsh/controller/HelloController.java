@@ -18,8 +18,8 @@ public class HelloController {
 
     @GetMapping("/hello")
     public String sayHello() {
-        String format = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        log.info("- - - - Now is "+ format);
-        return "Hello, World! "+format;
+        String format = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        log.info("- - - - - - - - Now is "+ format);
+        return "Hello World :"+format;
     }
 }
