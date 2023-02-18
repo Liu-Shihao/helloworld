@@ -33,7 +33,7 @@ spec:
   selector:
     app: hello-deploy
   ports:
-  - port: 8886
+  - port: 8088
     targetPort: 8080
   type: NodePort
 ---
