@@ -145,12 +145,12 @@ pipeline {
 
         stage('Publish Over SSH') {
             steps {
-            sshPublisher(publishers: [sshPublisherDesc(configName: 'k8s', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'deploy.yaml')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            sshPublisher(publishers: [sshPublisherDesc(configName: 'k8s', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'hello_deploy.yaml')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
             }
         }
         stage('Deployment k8s') {
             steps {
-            sh '''ssh root@192.168.153.128 kubectl apply -f /usr/local/k8s/deploy.yaml
+            sh '''ssh root@192.168.153.128 kubectl apply -f /usr/local/k8s/hello_deploy.yaml
             ssh root@192.168.153.128 kubectl rollout restart Deployment pipeline -n test'''
             }
         }

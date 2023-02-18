@@ -4,7 +4,7 @@ metadata:
   namespace: test
   name: hello-deploy
   labels:
-    app: pipeline
+    app: hello-deploy
 spec:
   replicas: 2
   selector:
@@ -16,7 +16,7 @@ spec:
         app: hello-deploy
     spec:
       containers:
-        - name: pipeline
+        - name: hello-deploy
           image: 192.168.153.131:80/helloworld/helloworld:latest
           imagePullPolicy: Always
           ports:
