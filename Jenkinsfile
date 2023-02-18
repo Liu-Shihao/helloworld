@@ -47,7 +47,7 @@ pipeline {
         stage('Deployment k8s') {
             steps {
             sh '''ssh root@192.168.153.128 kubectl apply -f /usr/local/k8s/hello_deploy.yaml
-            ssh root@192.168.153.128 kubectl rollout restart Deployment pipeline -n test'''
+            ssh root@192.168.153.128 kubectl rollout restart Deployment hello-deploy -n test'''
             }
         }
     }
