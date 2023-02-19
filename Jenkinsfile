@@ -11,8 +11,8 @@ pipeline {
 
         stage('Pull Code') {
             steps {
-             echo "branch name :${tag}"
-            checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
+//              echo "branch name :${tag}"
+            checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://gitee.com/L1692312138/jenkins-demo.git']]])
             }
         }
 
