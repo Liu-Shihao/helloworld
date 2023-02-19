@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: hello-deploy
-          image: 192.168.153.131:80/helloworld/helloworld:latest
+          image: 192.168.153.131:80/helloworld/hello-world:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
