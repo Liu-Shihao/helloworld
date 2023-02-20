@@ -46,6 +46,7 @@
 
     <profiles>
         <profile>
+            <!--       mvn sonar:sonar     -->
             <id>sonar</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
